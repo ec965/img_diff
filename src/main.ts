@@ -23,11 +23,12 @@ const findJpgs = (rootDir: string, skipDir: string[] = []): string[] => {
 const createDirPath = (dirPath: string): string[] => {
   const outPath = [...dirPath.split("/")];
   let currentDir = "";
-  for (let i = 0; i < outPath.length - 1; i++) {
-    currentDir += outPath[i];
-    mkDir(currentDir);
-    currentDir += "/";
-  }
+  outPath
+    .filter((_, i, arr) => i < arr.length - 1)
+    .forEach((currPath) => {
+      currentDir += currPath + "/";
+      mkDir(currentDir);
+    });
   return outPath;
 };
 
