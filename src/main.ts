@@ -10,32 +10,24 @@ const findJpgs = (rootDir: string, skipDir: string[] = []): string[] => {
   const jpgs = files
     .filter((file) => isJpg(file))
     .map((file) => path.join(rootDir, file));
-  const dirs = files.filter((file) =>
-    fs.statSync(path.join(rootDir, file)).isDirectory()
-  );
-  const nextJpgs = dirs
+  const nextJpgs = files
+    .filter((file) => fs.statSync(path.join(rootDir, file)).isDirectory())
     .filter((dir) => !skipDir.includes(dir))
     .map((dir) => findJpgs(path.join(rootDir, dir), skipDir))
     .flat();
   return [...jpgs, ...nextJpgs];
 };
 
-const createDirPath = (dirPath: string): string[] => {
-  const outPath = [...dirPath.split("/")];
-  let currentDir = "";
-  outPath
-    .filter((_, i, arr) => i < arr.length - 1)
-    .forEach((currPath) => {
-      currentDir += currPath + "/";
-      mkDir(currentDir);
-    });
-  return outPath;
-};
+const createDirPath = (...dirPath: string[]): void =>
+  dirPath.forEach(
+    (_, i, arr) =>
+      i < arr.length - 1 && mkDir(dirPath.slice(0, i + 1).join("/"))
+  );
 
 const mkDir = (dir: string) => !fs.existsSync(dir) && fs.mkdirSync(dir);
 
-const argv = minimist(process.argv.slice(2));
 // entry
+const argv = minimist(process.argv.slice(2));
 const output = "out";
 // 4:3
 const width = argv.w ?? 500;
@@ -45,7 +37,8 @@ const background = argv.b ?? "#ffffff";
 mkDir(output);
 
 findJpgs(".", ["node_modules", "out"]).forEach(async (jpg) => {
-  const outPath = createDirPath(`${output}/${jpg}`);
+  const outPath = `${output}/${jpg}`.split("/");
+  createDirPath(...outPath);
   console.time(jpg);
   try {
     await sharp(jpg)
