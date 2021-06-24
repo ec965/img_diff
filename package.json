@@ -6,6 +6,7 @@
   "scripts": {
     "start": "tsc && node dist/main.js",
     "build": "tsc",
+    "clean": "rm -rf ./out",
     "lint": "eslint \"src/**/*\"",
     "fmt": "prettier --write ."
   },
