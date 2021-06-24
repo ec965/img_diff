@@ -21,7 +21,7 @@ const findJpgs = (rootDir: string, skipDir: string[] = []): string[] => {
 const createDirPath = (...dirPath: string[]): void =>
   dirPath.forEach(
     (_, i, arr) =>
-      i < arr.length - 1 && mkDir(dirPath.slice(0, i + 1).join("/"))
+      i < arr.length - 1 && mkDir(path.join(...dirPath.slice(0, i + 1)))
   );
 
 const mkDir = (dir: string) => !fs.existsSync(dir) && fs.mkdirSync(dir);
