@@ -1,5 +1,5 @@
 {
-  "name": "img_diff",
+  "name": "img-diff",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -10,9 +10,11 @@
     "lint": "eslint \"src/**/*\"",
     "fmt": "prettier --write ."
   },
+  "bin": {
+    "img-diff": "dist/main.js"
+  },
   "author": "",
   "license": "ISC",
-  "type": "module",
   "dependencies": {
     "minimist": "^1.2.5",
     "sharp": "^0.28.3"
