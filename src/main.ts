@@ -5,7 +5,7 @@ import path from "path";
 import os from "os";
 import minimist from "minimist";
 
-const isJpg = (name: string): boolean => Boolean(name.match(/.*\.(jpg|JPG)$/m));
+const isJpg = (name: string): boolean => Boolean(name.match(/.*\.(jpg|JPG|png|PNG)$/m));
 
 /**
  * Find all jpg files in the root directory
