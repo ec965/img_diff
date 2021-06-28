@@ -107,9 +107,12 @@ function main() {
   mkDir(outDir);
 
   findJpgs(inDir, config.omitDir, recursive).forEach(async (jpg) => {
-    const jpgName = jpg.replace(inDir, "");
-    const jpgOutDir = outDir.split("/");
-    createDirPath("/", ...jpgOutDir);
+
+    const jpgInDir = jpg.replace(inDir, '').split("/");
+    const jpgName = jpgInDir.pop();
+    const jpgOutDir = ["/", ...outDir.split("/"), ...jpgInDir];
+
+    createDirPath(...jpgOutDir);
 
     console.time(jpg);
     try {
@@ -121,7 +124,7 @@ function main() {
           background: config.background,
         })
         .normalise()
-        .toFile(path.join("/", ...jpgOutDir, jpgName));
+        .toFile(path.join(...jpgOutDir, jpgName as string));
     } catch (err) {
       console.error(err);
     }
