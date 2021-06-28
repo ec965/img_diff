@@ -108,9 +108,9 @@ function main() {
 
   findJpgs(inDir, config.omitDir, recursive).forEach(async (jpg) => {
 
-    const jpgInDir = jpg.replace(inDir, '').split("/");
+    const jpgInDir = jpg.replace(inDir, '').split(path.sep);
     const jpgName = jpgInDir.pop();
-    const jpgOutDir = ["/", ...outDir.split("/"), ...jpgInDir];
+    const jpgOutDir = [path.sep, ...outDir.split(path.sep), ...jpgInDir];
 
     createDirPath(...jpgOutDir);
 
