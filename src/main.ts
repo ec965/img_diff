@@ -58,8 +58,8 @@ const printHelp = () =>
   -w width
   -h height
   -a aspect ratio
-  -b background for resize contain
-  -r resize type
+  -b background for resize "contain"
+  -f fite type: "cover", "contain", "fill", "inside", "outside"
   `);
 
 const removeUndefKeys = (obj: any) =>
