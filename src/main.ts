@@ -57,6 +57,7 @@ export interface Config {
   ratioUseWidth: boolean;
   background: string;
   omitDir: string[];
+  resize: "cover" | "contain" | "fill" | "inside" | "outside",
 }
 
 const defaultConfig: Config = {
@@ -67,6 +68,7 @@ const defaultConfig: Config = {
   ratioUseWidth: true,
   background: "#fff",
   omitDir: [],
+  resize: "inside",
 };
 
 function main() {
@@ -120,7 +122,7 @@ function main() {
         .resize({
           width: config.width,
           height: config.height,
-          fit: "contain",
+          fit: config.resize,
           background: config.background,
         })
         .normalise()
