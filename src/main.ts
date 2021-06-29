@@ -5,7 +5,8 @@ import path from "path";
 import os from "os";
 import minimist from "minimist";
 
-const isJpg = (name: string): boolean => Boolean(name.match(/.*\.(jpg|JPG|png|PNG)$/m));
+const isJpg = (name: string): boolean =>
+  Boolean(name.match(/.*\.(jpg|JPG|png|PNG)$/m));
 
 /**
  * Find all jpg files in the root directory
@@ -49,26 +50,36 @@ const createDirPath = (...dirPath: string[]): void =>
  */
 const mkDir = (dir: string) => !fs.existsSync(dir) && fs.mkdirSync(dir);
 
+const printHelp = () =>
+  console.log(`
+  -i input dir
+  -o output dir
+  -r recursive
+  -w width
+  -h height
+  -a aspect ratio
+  -b background for resize contain
+  -r resize type
+  `);
+
+const removeUndefKeys = (obj: any) =>
+  Object.keys(obj).forEach((key) => obj[key] === undefined && delete obj[key]);
+
 export interface Config {
-  width: number;
-  height: number;
-  aspectRatio: number;
-  ratioUseHeight: boolean;
-  ratioUseWidth: boolean;
-  background: string;
-  omitDir: string[];
-  resize: "cover" | "contain" | "fill" | "inside" | "outside",
+  width?: number;
+  height?: number;
+  aspectRatio?: number;
+  background?: string;
+  omitDir?: string[];
+  fit?: "cover" | "contain" | "fill" | "inside" | "outside";
 }
 
 const defaultConfig: Config = {
   width: 500,
-  height: 500,
   aspectRatio: 4 / 3,
-  ratioUseHeight: false,
-  ratioUseWidth: true,
   background: "#fff",
   omitDir: [],
-  resize: "inside",
+  fit: "inside",
 };
 
 function main() {
@@ -84,33 +95,47 @@ function main() {
     fs.writeFileSync(configFile, JSON.stringify(defaultConfig));
   }
 
-  let config: Config = { ...defaultConfig, ...require(configFile) };
+  const argv = minimist(process.argv.slice(2));
+  if (argv.h || argv.help) return printHelp();
+  const outDir = path.join(process.cwd(), argv.o || "out");
+  const inDir = path.join(process.cwd(), argv.i || ""); // defaults to current path
+  const recursive = Boolean(argv.r);
+
+  const argvConfig: Config = {
+    width: argv.w,
+    height: argv.h,
+    aspectRatio: argv.a,
+    background: argv.b,
+    fit: argv.f,
+  };
+
+  /* eslint-disable @typescript-eslint/no-var-requires */
+  const fileConfig = require(configFile);
+
+  removeUndefKeys(fileConfig);
+  removeUndefKeys(argvConfig);
+
+  const config: Config = {
+    ...defaultConfig,
+    ...require(configFile),
+    ...argvConfig,
+  };
 
   // validate config
-  if (config.ratioUseHeight && config.ratioUseWidth)
+  if (config.aspectRatio && config.width && config.height)
     throw new Error(
-      "Only one direction can be used to scale the aspect ratio."
+      "Aspect ratio cannot be defined while using both width and height."
     );
-
-  if (config.ratioUseHeight)
+  if (config.aspectRatio && config.height)
     config.width = Math.floor(config.height * config.aspectRatio);
-  if (config.ratioUseWidth)
+  if (config.aspectRatio && config.width)
     config.height = Math.floor(config.width * (1 / config.aspectRatio));
 
   // entry
-
-  const argv = minimist(process.argv.slice(2));
-  if (!argv.o) throw new Error("use -o to specify an output directory");
-  const outDir = path.join(process.cwd(), argv.o);
-  if (!argv.i) throw new Error("use -i to specify an input directory");
-  const inDir = path.join(process.cwd(), argv.i);
-  const recursive = Boolean(argv.r);
-
   mkDir(outDir);
 
   findJpgs(inDir, config.omitDir, recursive).forEach(async (jpg) => {
-
-    const jpgInDir = jpg.replace(inDir, '').split(path.sep);
+    const jpgInDir = jpg.replace(inDir, "").split(path.sep);
     const jpgName = jpgInDir.pop();
     const jpgOutDir = [path.sep, ...outDir.split(path.sep), ...jpgInDir];
 
@@ -122,7 +147,7 @@ function main() {
         .resize({
           width: config.width,
           height: config.height,
-          fit: config.resize,
+          fit: config.fit,
           background: config.background,
         })
         .normalise()
@@ -136,5 +161,6 @@ function main() {
 try {
   main();
 } catch (error) {
-  console.error(error.message);
+  printHelp();
+  console.error(error);
 }
